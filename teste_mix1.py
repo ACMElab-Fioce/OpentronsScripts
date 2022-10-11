@@ -1,10 +1,25 @@
+from opentrons import protocol_api
+from discord_webhook import DiscordWebhook, DiscordEmbed
+import config
+import math
+
 def get_values(*names):
     import json
     _all_values = json.loads("""{"num":1, "p20_mount":"right"}""")
     return [_all_values[n] for n in names]
 
-from opentrons import protocol_api
-import math
+webhook = config.webhook
+webhook_url = config.webhook_url
+
+def send_notification_discord(msg):
+    try:
+        webhook = DiscordWebhook(url=webhook_url)
+        embed = DiscordEmbed(title='Testando notificação opentrons', description=msg, color='db3021')
+        webhook.add_embed(embed)
+        response = webhook.execute()
+    except Exception as e:
+        print(e)
+        print("Erro na conexão")
 
 
 # metadata
@@ -27,8 +42,6 @@ def run(ctx: protocol_api.ProtocolContext):
     
     num_samps = int(num)  # should be int, 1
     
-    
-        
     # labware
 
     temperature_module = ctx.load_module('Temperature Module', 3)
@@ -98,7 +111,7 @@ def run(ctx: protocol_api.ProtocolContext):
     tc_module.close_lid()
     tc_module.open_lid()
 
-    print("AAAAA")
+    send_notification_discord("Protocolo terminou")
     
     ctx.comment('Hello World')
     ctx.comment('Você conseguiu!')
